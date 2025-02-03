@@ -1,0 +1,75 @@
+//Code to present modified Dijkstra Algorithm that removes a faulty edgein a power transmission network and reuns Dijkstra Algorithm using Priority Queue
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+#include <climits>
+#include <chrono>
+
+using namespace std;
+using namespace std::chrono;
+
+typedef pair<int, int> pii;
+
+const int INF = INT_MAX;
+
+void dijkstra(vector<vector<pii>>& graph, int source, vector<int>& dist) {
+    int n = graph.size();
+    dist.assign(n, INF);
+    dist[source] = 0;
+
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    pq.push({0, source});
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        int d = pq.top().first;
+        pq.pop();
+
+        if (d > dist[u]) continue;
+
+        for (auto& edge : graph[u]) {
+            int v = edge.first;
+            int w = edge.second;
+
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+}
+
+int main() {
+    int n = 5; // Number of vertices
+    vector<vector<pii>> graph(n);
+
+    // Add edges to the graph
+    graph[0].push_back({1, 10});
+    graph[0].push_back({2, 5});
+    graph[1].push_back({2, 2});
+    graph[1].push_back({3, 1});
+    graph[2].push_back({1, 3});
+    graph[2].push_back({3, 9});
+    // graph[2].push_back({4, 2}); // Remove the edge 2-4 to simulate the broken edge
+    graph[3].push_back({4, 4});
+
+    vector<int> dist;
+
+    // Measure the time taken for Dijkstra's algorithm
+    auto start = high_resolution_clock::now();
+    dijkstra(graph, 0, dist);
+    auto stop = high_resolution_clock::now();
+
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    // Print the updated distances to all other nodes from the source node
+    for (int i = 0; i < n; ++i) {
+        cout << "Updated distance from node 0 to node " << i << " is " << dist[i] << endl;
+    }
+
+    cout << "Time taken by Dijkstra's algorithm: " << duration.count() << " microseconds" << endl;
+
+    return 0;
+}
